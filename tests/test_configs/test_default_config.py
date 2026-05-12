@@ -1,34 +1,43 @@
-import os
-from unittest.mock import patch
+import pytest
 
 from src.configs.default_config import DefaultConfig
 
 
 class TestDefaultConfig:
-    def test_debug_is_false(self) -> None:
+    def test_debug_is_false_by_default(self) -> None:
         config: DefaultConfig = DefaultConfig()
+
         assert config.DEBUG is False
 
-    def test_testing_is_false(self) -> None:
+    def test_testing_is_false_by_default(self) -> None:
         config: DefaultConfig = DefaultConfig()
+
         assert config.TESTING is False
 
-    def test_tz_is_string(self) -> None:
+    def test_tz_defaults_to_argentina(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.delenv("TZ", raising=False)
+
         config: DefaultConfig = DefaultConfig()
-        assert isinstance(config.TZ, str)
-        assert len(config.TZ) > 0
 
-    def test_tz_overridden_by_env(self) -> None:
-        with patch.dict(os.environ, {"TZ": "Europe/London"}):
-            config: DefaultConfig = DefaultConfig()
-            assert config.TZ == "Europe/London"
+        assert config.TZ == "America/Argentina/Buenos_Aires"
 
-    def test_env_name_is_string(self) -> None:
+    def test_tz_uses_env_var_when_set(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("TZ", "UTC")
+
         config: DefaultConfig = DefaultConfig()
-        assert isinstance(config.ENV_NAME, str)
-        assert len(config.ENV_NAME) > 0
 
-    def test_env_name_overridden_by_env(self) -> None:
-        with patch.dict(os.environ, {"ENV_NAME": "my-custom-app"}):
-            config: DefaultConfig = DefaultConfig()
-            assert config.ENV_NAME == "my-custom-app"
+        assert config.TZ == "UTC"
+
+    def test_env_name_defaults_to_template_value(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.delenv("ENV_NAME", raising=False)
+
+        config: DefaultConfig = DefaultConfig()
+
+        assert config.ENV_NAME == "template tkinter python"
+
+    def test_env_name_uses_env_var_when_set(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("ENV_NAME", "my-app")
+
+        config: DefaultConfig = DefaultConfig()
+
+        assert config.ENV_NAME == "my-app"

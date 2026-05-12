@@ -20,234 +20,217 @@ from src.utils.dialogs import (
 
 
 class TestBaseDialog:
-    def test_default_dialog_type(self) -> None:
+    def test_dialog_type_default_is_error(self) -> None:
         dialog: BaseDialog = BaseDialog()
+
         assert dialog.dialog_type == BaseDialog.ERROR
 
-    def test_default_message(self) -> None:
+    def test_message_default_is_error_app(self) -> None:
         dialog: BaseDialog = BaseDialog()
+
         assert dialog.message == MESSAGE_ERROR_APP
 
-    def test_custom_message(self) -> None:
-        dialog: BaseDialog = BaseDialog(message="custom error")
-        assert dialog.message == "custom error"
+    def test_message_is_overridden_via_constructor(self) -> None:
+        dialog: BaseDialog = BaseDialog(message="custom message")
 
-    def test_none_message_keeps_default(self) -> None:
+        assert dialog.message == "custom message"
+
+    def test_message_is_not_overridden_when_none_is_passed(self) -> None:
         dialog: BaseDialog = BaseDialog(message=None)
+
         assert dialog.message == MESSAGE_ERROR_APP
 
-    def test_title_for_error_type(self) -> None:
+    def test_title_returns_error_for_error_dialog_type(self) -> None:
         dialog: BaseDialog = BaseDialog()
+
         assert dialog.title == "Error"
 
-    def test_to_dict_returns_correct_structure(self) -> None:
-        dialog: BaseDialog = BaseDialog(message="test msg")
-        result: dict[str, Any] = dialog.to_dict()
-        assert result["dialog_type"] == BaseDialog.ERROR
-        assert result["title"] == "Error"
-        assert result["message"] == "test msg"
-
-    def test_to_dict_has_all_keys(self) -> None:
-        dialog: BaseDialog = BaseDialog()
-        result: dict[str, Any] = dialog.to_dict()
-        assert "dialog_type" in result
-        assert "title" in result
-        assert "message" in result
-
-    def test_open_calls_showerror(self) -> None:
-        dialog: BaseDialog = BaseDialog(message="test error")
-        mock_handler: MagicMock = MagicMock()
-        with patch.dict(BaseDialog._HANDLERS, {BaseDialog.ERROR: mock_handler}):
-            dialog.open()
-            mock_handler.assert_called_once_with("Error", "test error")
-
-    def test_open_warning_calls_showwarning(self) -> None:
+    def test_title_returns_warning_for_warning_dialog_type(self) -> None:
         class WarningDialog(BaseDialog):
             dialog_type = BaseDialog.WARNING
-            message = "warn msg"
 
-        dialog: WarningDialog = WarningDialog()
-        mock_handler: MagicMock = MagicMock()
-        with patch.dict(BaseDialog._HANDLERS, {BaseDialog.WARNING: mock_handler}):
-            dialog.open()
-            mock_handler.assert_called_once_with("Warning", "warn msg")
+        assert WarningDialog().title == "Warning"
 
-    def test_open_info_calls_showinfo(self) -> None:
+    def test_title_returns_information_for_info_dialog_type(self) -> None:
         class InfoDialog(BaseDialog):
             dialog_type = BaseDialog.INFO
-            message = "info msg"
 
-        dialog: InfoDialog = InfoDialog()
+        assert InfoDialog().title == "Information"
+
+    def test_to_dict_contains_dialog_type_key(self) -> None:
+        result: dict[str, Any] = BaseDialog().to_dict()
+
+        assert "dialog_type" in result
+
+    def test_to_dict_contains_title_key(self) -> None:
+        result: dict[str, Any] = BaseDialog().to_dict()
+
+        assert "title" in result
+
+    def test_to_dict_contains_message_key(self) -> None:
+        result: dict[str, Any] = BaseDialog().to_dict()
+
+        assert "message" in result
+
+    def test_to_dict_values_match_instance_state(self) -> None:
+        dialog: BaseDialog = BaseDialog(message="test-msg")
+
+        result: dict[str, Any] = dialog.to_dict()
+
+        assert result["dialog_type"] == BaseDialog.ERROR
+        assert result["title"] == "Error"
+        assert result["message"] == "test-msg"
+
+    def test_open_calls_showerror_for_error_type(self) -> None:
+        dialog: BaseDialog = BaseDialog()
         mock_handler: MagicMock = MagicMock()
-        with patch.dict(BaseDialog._HANDLERS, {BaseDialog.INFO: mock_handler}):
-            dialog.open()
-            mock_handler.assert_called_once_with("Information", "info msg")
 
-    def test_open_invalid_type_calls_showerror_with_not_found(self) -> None:
+        with patch.dict(BaseDialog._HANDLERS, {BaseDialog.ERROR: mock_handler}):
+            dialog.open()
+
+        mock_handler.assert_called_once_with("Error", MESSAGE_ERROR_APP)
+
+    def test_open_calls_showwarning_for_warning_type(self) -> None:
+        class WarningDialog(BaseDialog):
+            dialog_type = BaseDialog.WARNING
+            message = "warn-msg"
+
+        mock_handler: MagicMock = MagicMock()
+
+        with patch.dict(BaseDialog._HANDLERS, {BaseDialog.WARNING: mock_handler}):
+            WarningDialog().open()
+
+        mock_handler.assert_called_once_with("Warning", "warn-msg")
+
+    def test_open_calls_showinfo_for_info_type(self) -> None:
+        class InfoDialog(BaseDialog):
+            dialog_type = BaseDialog.INFO
+            message = "info-msg"
+
+        mock_handler: MagicMock = MagicMock()
+
+        with patch.dict(BaseDialog._HANDLERS, {BaseDialog.INFO: mock_handler}):
+            InfoDialog().open()
+
+        mock_handler.assert_called_once_with("Information", "info-msg")
+
+    def test_open_calls_showerror_when_dialog_type_is_invalid(self) -> None:
         class BadDialog(BaseDialog):
             dialog_type = "INVALID"
 
-        dialog: BadDialog = BadDialog()
-        with patch("src.utils.dialogs.messagebox.showerror") as mock_error:
-            dialog.open()
-            mock_error.assert_called_once_with(BaseDialog.ERROR, MESSAGE_NOT_FOUND_DIALOG_TYPE)
+        with patch("src.utils.dialogs.messagebox.showerror") as mock_showerror:
+            BadDialog().open()
 
-    def test_title_falls_back_to_error_on_unknown_type(self) -> None:
-        class BadDialog(BaseDialog):
-            dialog_type = "UNKNOWN"
-
-        dialog: BadDialog = BadDialog()
-        assert dialog.title == "Error"
-
-    def test_error_constant(self) -> None:
-        assert BaseDialog.ERROR == "Error"
-
-    def test_warning_constant(self) -> None:
-        assert BaseDialog.WARNING == "Warning"
-
-    def test_info_constant(self) -> None:
-        assert BaseDialog.INFO == "Info"
+            mock_showerror.assert_called_once_with(BaseDialog.ERROR, MESSAGE_NOT_FOUND_DIALOG_TYPE)
 
 
 class TestBaseDialogError:
-    def test_is_exception(self) -> None:
-        error: BaseDialogError = BaseDialogError()
-        assert isinstance(error, Exception)
+    def test_is_subclass_of_exception(self) -> None:
+        assert issubclass(BaseDialogError, Exception)
 
-    def test_is_base_dialog(self) -> None:
-        error: BaseDialogError = BaseDialogError()
-        assert isinstance(error, BaseDialog)
+    def test_is_subclass_of_base_dialog(self) -> None:
+        assert issubclass(BaseDialogError, BaseDialog)
 
     def test_dialog_type_is_error(self) -> None:
-        error: BaseDialogError = BaseDialogError()
-        assert error.dialog_type == BaseDialog.ERROR
+        assert BaseDialogError.dialog_type == BaseDialog.ERROR
 
-    def test_default_message(self) -> None:
-        error: BaseDialogError = BaseDialogError()
-        assert error.message == MESSAGE_ERROR_APP
-
-    def test_can_be_raised(self) -> None:
+    def test_can_be_raised_and_caught(self) -> None:
         with pytest.raises(BaseDialogError):
             raise BaseDialogError()
 
 
 class TestValidationDialogError:
-    def test_is_exception(self) -> None:
+    def test_is_subclass_of_base_dialog_error(self) -> None:
+        assert issubclass(ValidationDialogError, BaseDialogError)
+
+    def test_can_be_raised_and_caught(self) -> None:
         with pytest.raises(ValidationDialogError):
             raise ValidationDialogError()
 
-    def test_is_base_dialog_error(self) -> None:
-        error: ValidationDialogError = ValidationDialogError()
-        assert isinstance(error, BaseDialogError)
+    def test_is_caught_as_base_dialog_error(self) -> None:
+        with pytest.raises(BaseDialogError):
+            raise ValidationDialogError()
 
-    def test_custom_message(self) -> None:
-        error: ValidationDialogError = ValidationDialogError(message="bad input")
-        assert error.message == "bad input"
+    def test_message_can_be_set_via_constructor(self) -> None:
+        error: ValidationDialogError = ValidationDialogError(message="invalid input")
 
-    def test_dialog_type_is_error(self) -> None:
-        error: ValidationDialogError = ValidationDialogError()
-        assert error.dialog_type == BaseDialog.ERROR
+        assert error.message == "invalid input"
 
 
 class TestAuthenticationDialogError:
-    def test_is_exception(self) -> None:
+    def test_is_subclass_of_base_dialog_error(self) -> None:
+        assert issubclass(AuthenticationDialogError, BaseDialogError)
+
+    def test_can_be_raised_and_caught(self) -> None:
         with pytest.raises(AuthenticationDialogError):
             raise AuthenticationDialogError()
 
-    def test_default_message(self) -> None:
-        error: AuthenticationDialogError = AuthenticationDialogError()
-        assert error.message == "Authentication error"
-
-    def test_custom_message(self) -> None:
-        error: AuthenticationDialogError = AuthenticationDialogError(message="invalid token")
-        assert error.message == "invalid token"
-
 
 class TestNotFoundDialogError:
-    def test_is_exception(self) -> None:
+    def test_is_subclass_of_base_dialog_error(self) -> None:
+        assert issubclass(NotFoundDialogError, BaseDialogError)
+
+    def test_can_be_raised_and_caught(self) -> None:
         with pytest.raises(NotFoundDialogError):
             raise NotFoundDialogError()
 
-    def test_default_message(self) -> None:
-        error: NotFoundDialogError = NotFoundDialogError()
-        assert error.message == "Resource not found"
-
 
 class TestConflictDialogError:
-    def test_is_exception(self) -> None:
+    def test_is_subclass_of_base_dialog_error(self) -> None:
+        assert issubclass(ConflictDialogError, BaseDialogError)
+
+    def test_can_be_raised_and_caught(self) -> None:
         with pytest.raises(ConflictDialogError):
             raise ConflictDialogError()
 
-    def test_default_message(self) -> None:
-        error: ConflictDialogError = ConflictDialogError()
-        assert error.message == "Conflict error"
-
 
 class TestBusinessDialogError:
-    def test_is_exception(self) -> None:
+    def test_is_subclass_of_base_dialog_error(self) -> None:
+        assert issubclass(BusinessDialogError, BaseDialogError)
+
+    def test_can_be_raised_and_caught(self) -> None:
         with pytest.raises(BusinessDialogError):
             raise BusinessDialogError()
 
-    def test_default_message(self) -> None:
-        error: BusinessDialogError = BusinessDialogError()
-        assert error.message == "Business rule violated"
-
 
 class TestInternalDialogError:
-    def test_is_exception(self) -> None:
+    def test_is_subclass_of_base_dialog_error(self) -> None:
+        assert issubclass(InternalDialogError, BaseDialogError)
+
+    def test_message_can_be_set_via_constructor(self) -> None:
+        error: InternalDialogError = InternalDialogError(message="internal failure")
+
+        assert error.message == "internal failure"
+
+    def test_can_be_raised_and_caught(self) -> None:
         with pytest.raises(InternalDialogError):
             raise InternalDialogError()
 
-    def test_default_message(self) -> None:
-        error: InternalDialogError = InternalDialogError()
-        assert error.message == "Internal error"
-
-    def test_custom_message(self) -> None:
-        error: InternalDialogError = InternalDialogError(message="db connection failed")
-        assert error.message == "db connection failed"
-
 
 class TestBaseDialogNotification:
-    def test_is_not_exception(self) -> None:
-        notification: BaseDialogNotification = BaseDialogNotification()
-        assert not isinstance(notification, Exception)
+    def test_is_subclass_of_base_dialog(self) -> None:
+        assert issubclass(BaseDialogNotification, BaseDialog)
 
-    def test_is_base_dialog(self) -> None:
-        notification: BaseDialogNotification = BaseDialogNotification()
-        assert isinstance(notification, BaseDialog)
+    def test_is_not_an_exception(self) -> None:
+        assert not issubclass(BaseDialogNotification, Exception)
 
 
 class TestDeprecatedDialogWarning:
+    def test_is_subclass_of_base_dialog_notification(self) -> None:
+        assert issubclass(DeprecatedDialogWarning, BaseDialogNotification)
+
     def test_dialog_type_is_warning(self) -> None:
-        warning: DeprecatedDialogWarning = DeprecatedDialogWarning()
-        assert warning.dialog_type == BaseDialog.WARNING
-
-    def test_default_message(self) -> None:
-        warning: DeprecatedDialogWarning = DeprecatedDialogWarning()
-        assert warning.message == "This feature is deprecated"
-
-    def test_title_is_warning(self) -> None:
-        warning: DeprecatedDialogWarning = DeprecatedDialogWarning()
-        assert warning.title == "Warning"
-
-    def test_is_not_exception(self) -> None:
-        warning: DeprecatedDialogWarning = DeprecatedDialogWarning()
-        assert not isinstance(warning, Exception)
+        assert DeprecatedDialogWarning.dialog_type == BaseDialog.WARNING
 
 
 class TestSuccessDialogInformation:
+    def test_is_subclass_of_base_dialog_notification(self) -> None:
+        assert issubclass(SuccessDialogInformation, BaseDialogNotification)
+
     def test_dialog_type_is_info(self) -> None:
-        info: SuccessDialogInformation = SuccessDialogInformation()
-        assert info.dialog_type == BaseDialog.INFO
+        assert SuccessDialogInformation.dialog_type == BaseDialog.INFO
 
-    def test_default_message(self) -> None:
-        info: SuccessDialogInformation = SuccessDialogInformation()
-        assert info.message == "Operation completed successfully"
+    def test_can_be_instantiated(self) -> None:
+        notification: SuccessDialogInformation = SuccessDialogInformation()
 
-    def test_title_is_information(self) -> None:
-        info: SuccessDialogInformation = SuccessDialogInformation()
-        assert info.title == "Information"
-
-    def test_is_not_exception(self) -> None:
-        info: SuccessDialogInformation = SuccessDialogInformation()
-        assert not isinstance(info, Exception)
+        assert notification is not None

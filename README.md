@@ -120,6 +120,8 @@ Before packaging or distributing the app, scan your dependencies for known vulne
 
 Once tests pass and the audit is clean, you can generate a standalone executable (`.exe` on Windows, or binary on Linux/Mac) using **PyInstaller**.
 
+> **Security notice:** The `.env` file is bundled directly into the executable by `app.spec`. Your development `.env` contains `ENVIRONMENT=development` and no real secrets, so it is safe to bundle for testing builds. For production releases, create a dedicated `.env` with production values, build the executable, then **immediately delete it** from the source tree. Never commit a production `.env` to the repository.
+
 ### Windows
 
 1. Go to the repository folder

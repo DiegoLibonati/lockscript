@@ -1,4 +1,4 @@
-from tkinter import Frame, Label, StringVar, Tk
+from tkinter import Frame, Label, Misc, StringVar
 
 from src.ui.components.action_buttons import ActionButtons
 from src.ui.components.file_importer import FileImporter
@@ -8,7 +8,7 @@ from src.ui.styles import Styles
 class MainView(Frame):
     def __init__(
         self,
-        root: Tk,
+        root: Misc,
         styles: Styles,
         on_import: callable,
         on_encrypt: callable,

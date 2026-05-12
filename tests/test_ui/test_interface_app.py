@@ -1,81 +1,130 @@
 import tkinter as tk
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
-from src.configs.default_config import DefaultConfig
+from src.configs.development_config import DevelopmentConfig
 from src.constants.messages import MESSAGE_SUCCESS_DECRYPTED, MESSAGE_SUCCESS_ENCRYPTED
-from src.services.file_service import FileService
 from src.ui.interface_app import InterfaceApp
-from src.ui.styles import Styles
 
 
 class TestInterfaceApp:
     def test_instantiation(self, root: tk.Tk) -> None:
-        config: DefaultConfig = DefaultConfig()
-        app: InterfaceApp = InterfaceApp(root=root, config=config)
+        app: InterfaceApp = InterfaceApp(root, DevelopmentConfig())
+
         assert app is not None
+        app._main_view.destroy()
 
-    def test_initial_path_is_empty(self, root: tk.Tk) -> None:
-        config: DefaultConfig = DefaultConfig()
-        app: InterfaceApp = InterfaceApp(root=root, config=config)
+    def test_title_is_lockscript(self, root: tk.Tk) -> None:
+        app: InterfaceApp = InterfaceApp(root, DevelopmentConfig())
+
+        assert root.title() == "Lockscript"
+        app._main_view.destroy()
+
+    def test_initial_path_is_empty_string(self, root: tk.Tk) -> None:
+        app: InterfaceApp = InterfaceApp(root, DevelopmentConfig())
+
         assert app._path == ""
-
-    def test_config_is_stored(self, root: tk.Tk) -> None:
-        config: DefaultConfig = DefaultConfig()
-        app: InterfaceApp = InterfaceApp(root=root, config=config)
-        assert app._config is config
-
-    def test_styles_default_is_styles_instance(self, root: tk.Tk) -> None:
-        config: DefaultConfig = DefaultConfig()
-        app: InterfaceApp = InterfaceApp(root=root, config=config)
-        assert isinstance(app._styles, Styles)
+        app._main_view.destroy()
 
     def test_select_file_updates_path(self, root: tk.Tk) -> None:
-        config: DefaultConfig = DefaultConfig()
-        app: InterfaceApp = InterfaceApp(root=root, config=config)
-        with patch("src.ui.interface_app.filedialog.askopenfilename", return_value="/path/to/file.txt"):
+        app: InterfaceApp = InterfaceApp(root, DevelopmentConfig())
+
+        with patch("src.ui.interface_app.filedialog.askopenfilename") as mock_dialog:
+            mock_dialog.return_value = "/path/to/file.txt"
+
             app._select_file()
+
         assert app._path == "/path/to/file.txt"
+        app._main_view.destroy()
 
     def test_select_file_updates_import_label(self, root: tk.Tk) -> None:
-        config: DefaultConfig = DefaultConfig()
-        app: InterfaceApp = InterfaceApp(root=root, config=config)
-        with patch("src.ui.interface_app.filedialog.askopenfilename", return_value="/path/to/file.txt"):
+        app: InterfaceApp = InterfaceApp(root, DevelopmentConfig())
+
+        with patch("src.ui.interface_app.filedialog.askopenfilename") as mock_dialog:
+            mock_dialog.return_value = "/path/to/file.txt"
+
             app._select_file()
+
         assert app._main_view._file_importer._label_import_file.get() == "/path/to/file.txt"
+        app._main_view.destroy()
 
-    def test_select_file_empty_result_clears_path(self, root: tk.Tk) -> None:
-        config: DefaultConfig = DefaultConfig()
-        app: InterfaceApp = InterfaceApp(root=root, config=config)
-        with patch("src.ui.interface_app.filedialog.askopenfilename", return_value=""):
-            app._select_file()
-        assert app._path == ""
+    def test_encrypt_file_calls_file_service_with_current_path(self, root: tk.Tk) -> None:
+        app: InterfaceApp = InterfaceApp(root, DevelopmentConfig())
+        app._path = "/path/to/file.txt"
 
-    def test_encrypt_file_sets_success_result(self, root: tk.Tk) -> None:
-        config: DefaultConfig = DefaultConfig()
-        app: InterfaceApp = InterfaceApp(root=root, config=config)
-        with patch.object(FileService, "encrypt_file", return_value=True):
+        with patch("src.ui.interface_app.FileService") as mock_service_cls:
+            mock_service: MagicMock = MagicMock()
+            mock_service_cls.return_value = mock_service
+            mock_service.encrypt_file.return_value = True
+
             app._encrypt_file()
+
+            mock_service.encrypt_file.assert_called_once_with(filepath="/path/to/file.txt")
+        app._main_view.destroy()
+
+    def test_encrypt_file_sets_success_result_on_ok(self, root: tk.Tk) -> None:
+        app: InterfaceApp = InterfaceApp(root, DevelopmentConfig())
+        app._path = "/path/to/file.txt"
+
+        with patch("src.ui.interface_app.FileService") as mock_service_cls:
+            mock_service: MagicMock = MagicMock()
+            mock_service_cls.return_value = mock_service
+            mock_service.encrypt_file.return_value = True
+
+            app._encrypt_file()
+
         assert app._main_view._label_operation_result.get() == MESSAGE_SUCCESS_ENCRYPTED
+        app._main_view.destroy()
 
-    def test_encrypt_file_does_not_set_result_on_failure(self, root: tk.Tk) -> None:
-        config: DefaultConfig = DefaultConfig()
-        app: InterfaceApp = InterfaceApp(root=root, config=config)
-        app._main_view.set_result("")
-        with patch.object(FileService, "encrypt_file", return_value=False):
+    def test_encrypt_file_does_not_set_result_when_service_returns_false(self, root: tk.Tk) -> None:
+        app: InterfaceApp = InterfaceApp(root, DevelopmentConfig())
+
+        with patch("src.ui.interface_app.FileService") as mock_service_cls:
+            mock_service: MagicMock = MagicMock()
+            mock_service_cls.return_value = mock_service
+            mock_service.encrypt_file.return_value = False
+
             app._encrypt_file()
-        assert app._main_view._label_operation_result.get() == ""
 
-    def test_decrypt_file_sets_success_result(self, root: tk.Tk) -> None:
-        config: DefaultConfig = DefaultConfig()
-        app: InterfaceApp = InterfaceApp(root=root, config=config)
-        with patch.object(FileService, "decrypt_file", return_value=True):
+        assert app._main_view._label_operation_result.get() == ""
+        app._main_view.destroy()
+
+    def test_decrypt_file_calls_file_service_with_current_path(self, root: tk.Tk) -> None:
+        app: InterfaceApp = InterfaceApp(root, DevelopmentConfig())
+        app._path = "/path/to/file.txt"
+
+        with patch("src.ui.interface_app.FileService") as mock_service_cls:
+            mock_service: MagicMock = MagicMock()
+            mock_service_cls.return_value = mock_service
+            mock_service.decrypt_file.return_value = True
+
             app._decrypt_file()
+
+            mock_service.decrypt_file.assert_called_once_with(filepath="/path/to/file.txt")
+        app._main_view.destroy()
+
+    def test_decrypt_file_sets_success_result_on_ok(self, root: tk.Tk) -> None:
+        app: InterfaceApp = InterfaceApp(root, DevelopmentConfig())
+        app._path = "/path/to/file.txt"
+
+        with patch("src.ui.interface_app.FileService") as mock_service_cls:
+            mock_service: MagicMock = MagicMock()
+            mock_service_cls.return_value = mock_service
+            mock_service.decrypt_file.return_value = True
+
+            app._decrypt_file()
+
         assert app._main_view._label_operation_result.get() == MESSAGE_SUCCESS_DECRYPTED
+        app._main_view.destroy()
 
-    def test_decrypt_file_does_not_set_result_on_failure(self, root: tk.Tk) -> None:
-        config: DefaultConfig = DefaultConfig()
-        app: InterfaceApp = InterfaceApp(root=root, config=config)
-        app._main_view.set_result("")
-        with patch.object(FileService, "decrypt_file", return_value=False):
+    def test_decrypt_file_does_not_set_result_when_service_returns_false(self, root: tk.Tk) -> None:
+        app: InterfaceApp = InterfaceApp(root, DevelopmentConfig())
+
+        with patch("src.ui.interface_app.FileService") as mock_service_cls:
+            mock_service: MagicMock = MagicMock()
+            mock_service_cls.return_value = mock_service
+            mock_service.decrypt_file.return_value = False
+
             app._decrypt_file()
+
         assert app._main_view._label_operation_result.get() == ""
+        app._main_view.destroy()

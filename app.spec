@@ -1,11 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-block_cipher = None
-
 a = Analysis(
     ['app.py'],
     pathex=[],
     binaries=[],
+    # WARNING: The .env file is bundled into the binary.
+    # Do NOT use the development .env for production builds.
+    # Before running PyInstaller for a release, create a separate .env.prod with
+    # production values, copy it to .env, build, then delete the production .env
+    # from the source tree. Never commit production secrets to the repository.
     datas=[('.env', '.')],
     hiddenimports=[],
     hookspath=[],
@@ -16,7 +19,7 @@ a = Analysis(
     optimize=0,
 )
 
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+pyz = PYZ(a.pure, a.zipped_data)
 
 exe = EXE(
     pyz,

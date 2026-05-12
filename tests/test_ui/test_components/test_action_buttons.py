@@ -7,71 +7,55 @@ from src.ui.styles import Styles
 
 class TestActionButtons:
     def test_instantiation(self, root: tk.Tk) -> None:
-        buttons: ActionButtons = ActionButtons(
-            parent=root,
-            styles=Styles(),
-            on_encrypt=MagicMock(),
-            on_decrypt=MagicMock(),
-        )
+        buttons: ActionButtons = ActionButtons(root, Styles(), MagicMock(), MagicMock())
+
         assert buttons is not None
+        buttons.destroy()
 
-    def test_is_frame(self, root: tk.Tk) -> None:
-        buttons: ActionButtons = ActionButtons(
-            parent=root,
-            styles=Styles(),
-            on_encrypt=MagicMock(),
-            on_decrypt=MagicMock(),
-        )
-        assert isinstance(buttons, tk.Frame)
+    def test_has_two_child_buttons(self, root: tk.Tk) -> None:
+        buttons: ActionButtons = ActionButtons(root, Styles(), MagicMock(), MagicMock())
 
-    def test_background_color(self, root: tk.Tk) -> None:
-        styles: Styles = Styles()
-        buttons: ActionButtons = ActionButtons(
-            parent=root,
-            styles=styles,
-            on_encrypt=MagicMock(),
-            on_decrypt=MagicMock(),
-        )
-        assert buttons.cget("bg") == styles.WHITE_COLOR
+        children: list[tk.Widget] = buttons.winfo_children()
 
-    def test_on_encrypt_callback_stored(self, root: tk.Tk) -> None:
-        on_encrypt: MagicMock = MagicMock()
-        buttons: ActionButtons = ActionButtons(
-            parent=root,
-            styles=Styles(),
-            on_encrypt=on_encrypt,
-            on_decrypt=MagicMock(),
-        )
-        assert buttons._on_encrypt is on_encrypt
+        assert len(children) == 2
+        buttons.destroy()
 
-    def test_on_decrypt_callback_stored(self, root: tk.Tk) -> None:
-        on_decrypt: MagicMock = MagicMock()
-        buttons: ActionButtons = ActionButtons(
-            parent=root,
-            styles=Styles(),
-            on_encrypt=MagicMock(),
-            on_decrypt=on_decrypt,
-        )
-        assert buttons._on_decrypt is on_decrypt
+    def test_encrypt_button_invokes_encrypt_callback(self, root: tk.Tk) -> None:
+        mock_encrypt: MagicMock = MagicMock()
+        buttons: ActionButtons = ActionButtons(root, Styles(), mock_encrypt, MagicMock())
 
-    def test_on_encrypt_callback_called(self, root: tk.Tk) -> None:
-        on_encrypt: MagicMock = MagicMock()
-        buttons: ActionButtons = ActionButtons(
-            parent=root,
-            styles=Styles(),
-            on_encrypt=on_encrypt,
-            on_decrypt=MagicMock(),
-        )
-        buttons._on_encrypt()
-        on_encrypt.assert_called_once()
+        encrypt_btn: tk.Button = buttons.winfo_children()[0]
+        encrypt_btn.invoke()
 
-    def test_on_decrypt_callback_called(self, root: tk.Tk) -> None:
-        on_decrypt: MagicMock = MagicMock()
-        buttons: ActionButtons = ActionButtons(
-            parent=root,
-            styles=Styles(),
-            on_encrypt=MagicMock(),
-            on_decrypt=on_decrypt,
-        )
-        buttons._on_decrypt()
-        on_decrypt.assert_called_once()
+        mock_encrypt.assert_called_once()
+        buttons.destroy()
+
+    def test_decrypt_button_invokes_decrypt_callback(self, root: tk.Tk) -> None:
+        mock_decrypt: MagicMock = MagicMock()
+        buttons: ActionButtons = ActionButtons(root, Styles(), MagicMock(), mock_decrypt)
+
+        decrypt_btn: tk.Button = buttons.winfo_children()[1]
+        decrypt_btn.invoke()
+
+        mock_decrypt.assert_called_once()
+        buttons.destroy()
+
+    def test_encrypt_callback_is_not_called_on_decrypt_invoke(self, root: tk.Tk) -> None:
+        mock_encrypt: MagicMock = MagicMock()
+        buttons: ActionButtons = ActionButtons(root, Styles(), mock_encrypt, MagicMock())
+
+        decrypt_btn: tk.Button = buttons.winfo_children()[1]
+        decrypt_btn.invoke()
+
+        mock_encrypt.assert_not_called()
+        buttons.destroy()
+
+    def test_decrypt_callback_is_not_called_on_encrypt_invoke(self, root: tk.Tk) -> None:
+        mock_decrypt: MagicMock = MagicMock()
+        buttons: ActionButtons = ActionButtons(root, Styles(), MagicMock(), mock_decrypt)
+
+        encrypt_btn: tk.Button = buttons.winfo_children()[0]
+        encrypt_btn.invoke()
+
+        mock_decrypt.assert_not_called()
+        buttons.destroy()

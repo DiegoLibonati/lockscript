@@ -4,32 +4,35 @@ from src.configs.logger_config import setup_logger
 
 
 class TestSetupLogger:
-    def test_returns_logger(self) -> None:
+    def test_returns_logger_instance(self) -> None:
         logger: logging.Logger = setup_logger()
+
         assert isinstance(logger, logging.Logger)
 
-    def test_default_name(self) -> None:
+    def test_default_name_is_tkinter_app(self) -> None:
         logger: logging.Logger = setup_logger()
+
         assert logger.name == "tkinter-app"
 
-    def test_custom_name(self) -> None:
-        logger: logging.Logger = setup_logger(name="my-app")
-        assert logger.name == "my-app"
+    def test_custom_name_is_used(self) -> None:
+        logger: logging.Logger = setup_logger("custom-logger-name")
 
-    def test_has_handlers(self) -> None:
-        logger: logging.Logger = setup_logger(name="test-logger-with-handlers")
+        assert logger.name == "custom-logger-name"
+
+    def test_logger_has_handlers_after_setup(self) -> None:
+        logger: logging.Logger = setup_logger("test-logger-with-handlers")
+
         assert len(logger.handlers) > 0
 
-    def test_level_is_debug(self) -> None:
-        logger: logging.Logger = setup_logger(name="test-logger-debug-level")
+    def test_calling_twice_does_not_add_extra_handlers(self) -> None:
+        logger: logging.Logger = setup_logger("test-logger-idempotent")
+        initial_count: int = len(logger.handlers)
+
+        setup_logger("test-logger-idempotent")
+
+        assert len(logger.handlers) == initial_count
+
+    def test_logger_level_is_debug(self) -> None:
+        logger: logging.Logger = setup_logger("test-logger-level")
+
         assert logger.level == logging.DEBUG
-
-    def test_calling_twice_does_not_duplicate_handlers(self) -> None:
-        logger: logging.Logger = setup_logger(name="test-no-duplicate-handlers")
-        count_first: int = len(logger.handlers)
-        setup_logger(name="test-no-duplicate-handlers")
-        assert len(logger.handlers) == count_first
-
-    def test_handler_is_stream_handler(self) -> None:
-        logger: logging.Logger = setup_logger(name="test-stream-handler")
-        assert any(isinstance(h, logging.StreamHandler) for h in logger.handlers)

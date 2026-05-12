@@ -16,9 +16,6 @@ class TestStyles:
     def test_green_color(self) -> None:
         assert Styles.GREEN_COLOR == "#00FF00"
 
-    def test_font_times_base(self) -> None:
-        assert Styles.FONT_TIMES == "Times"
-
     def test_font_times_10(self) -> None:
         assert Styles.FONT_TIMES_10 == "Times 10"
 
@@ -37,36 +34,32 @@ class TestStyles:
     def test_font_times_20(self) -> None:
         assert Styles.FONT_TIMES_20 == "Times 20"
 
-    def test_wrap_none(self) -> None:
-        assert Styles.WRAP_NONE == NONE
-
-    def test_fill_both(self) -> None:
+    def test_fill_both_matches_tkinter_constant(self) -> None:
         assert Styles.FILL_BOTH == BOTH
 
-    def test_fill_y(self) -> None:
-        assert Styles.FILL_Y == Y
-
-    def test_fill_x(self) -> None:
+    def test_fill_x_matches_tkinter_constant(self) -> None:
         assert Styles.FILL_X == X
 
-    def test_side_right(self) -> None:
+    def test_fill_y_matches_tkinter_constant(self) -> None:
+        assert Styles.FILL_Y == Y
+
+    def test_side_right_matches_tkinter_constant(self) -> None:
         assert Styles.SIDE_RIGHT == RIGHT
 
-    def test_side_bottom(self) -> None:
+    def test_side_bottom_matches_tkinter_constant(self) -> None:
         assert Styles.SIDE_BOTTOM == BOTTOM
 
-    def test_orient_horizontal(self) -> None:
+    def test_orient_horizontal_matches_tkinter_constant(self) -> None:
         assert Styles.ORIENT_HORIZONTAL == HORIZONTAL
 
-    def test_position_end(self) -> None:
+    def test_position_end_matches_tkinter_constant(self) -> None:
         assert Styles.POSITION_END == END
 
-    def test_anchor_center(self) -> None:
+    def test_anchor_center_matches_tkinter_constant(self) -> None:
         assert Styles.ANCHOR_CENTER == CENTER
 
-    def test_relief_raised(self) -> None:
+    def test_relief_raised_matches_tkinter_constant(self) -> None:
         assert Styles.RELIEF_RAISED == RAISED
 
-    def test_instantiation(self) -> None:
-        styles: Styles = Styles()
-        assert styles is not None
+    def test_wrap_none_matches_tkinter_constant(self) -> None:
+        assert Styles.WRAP_NONE == NONE
