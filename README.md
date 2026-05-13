@@ -33,7 +33,7 @@ Lockscript is designed as a lightweight, educational tool to demonstrate how a f
 
 ## Libraries used
 
-The dependencies are declared in `pyproject.toml`. The `requirements*.txt` files are thin wrappers (`-e .`, `-e .[dev]`, `-e .[test]`) kept for backward-compatible muscle memory.
+The dependencies are declared in `pyproject.toml`. The `requirements*.txt` files are thin wrappers (`-e .`, `-e .[dev]`, `-e .[test]`, `-e .[build]`) kept for backward-compatible muscle memory.
 
 #### Runtime ([project.dependencies])
 
