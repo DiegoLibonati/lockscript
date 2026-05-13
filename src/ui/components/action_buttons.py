@@ -4,7 +4,9 @@ from src.ui.styles import Styles
 
 
 class ActionButtons(Frame):
-    def __init__(self, parent: Misc, styles: Styles, on_encrypt: callable, on_decrypt: callable) -> None:
+    def __init__(
+        self, parent: Misc, styles: Styles, on_encrypt: callable, on_decrypt: callable
+    ) -> None:
         super().__init__(parent, bg=styles.WHITE_COLOR)
         self._styles = styles
         self._on_encrypt = on_encrypt
