@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "Lockscript is a desktop application built with Python and Tkinter that lets you encrypt and decrypt text files directly from a graphical interface — no terminal knowledge required."
 requires-python = ">=3.11"
 dependencies = [
-    "python-dotenv>=1.0",
+    "python-dotenv==1.0.1",
 ]
 
 [project.optional-dependencies]
@@ -21,7 +21,7 @@ test = [
     "pytest-xdist==3.5.0",
 ]
 build = [
-    "pyinstaller>=6.0",
+    "pyinstaller==6.16.0",
 ]
 
 [tool.pytest.ini_options]
