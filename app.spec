@@ -1,14 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+# WARNING: The .env file is bundled into the binary.
+# For production releases, set production values directly in .env, build,
+# then immediately delete .env from the source tree.
+# Never commit production secrets to the repository.
+
 a = Analysis(
     ['app.py'],
     pathex=[],
     binaries=[],
-    # WARNING: The .env file is bundled into the binary.
-    # Do NOT use the development .env for production builds.
-    # Before running PyInstaller for a release, create a separate .env.prod with
-    # production values, copy it to .env, build, then delete the production .env
-    # from the source tree. Never commit production secrets to the repository.
     datas=[('.env', '.')],
     hiddenimports=[],
     hookspath=[],
