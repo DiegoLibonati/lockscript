@@ -33,22 +33,23 @@ Lockscript is designed as a lightweight, educational tool to demonstrate how a f
 
 ## Libraries used
 
-The dependencies are split across multiple requirements files so that runtime, development, testing, and build concerns stay isolated.
+The dependencies are declared in `pyproject.toml`. The `requirements*.txt` files are thin wrappers (`-e .`, `-e .[dev]`, `-e .[test]`) kept for backward-compatible muscle memory.
 
-#### Requirements.txt
+#### Runtime ([project.dependencies])
 
 ```
-python-dotenv==1.0.1
+python-dotenv>=1.0
 ```
 
-#### Requirements.dev.txt
+#### Dev ([project.optional-dependencies] dev)
+
 ```
 pre-commit==4.3.0
 pip-audit==2.7.3
 ruff==0.11.12
 ```
 
-#### Requirements.test.txt
+#### Test ([project.optional-dependencies] test)
 
 ```
 pytest==8.4.2
@@ -58,10 +59,10 @@ pytest-timeout==2.3.1
 pytest-xdist==3.5.0
 ```
 
-#### Requirements.build.txt
+#### Build ([project.optional-dependencies] build)
 
 ```
-pyinstaller==6.16.0
+pyinstaller>=6.0
 ```
 
 ## Getting Started
@@ -72,13 +73,11 @@ Follow these steps to set up the project locally for development.
 2. Go to the repository folder and execute: `python -m venv venv`
 3. Execute in Windows: `venv\Scripts\activate`
 4. Execute in Linux/Mac: `source venv/bin/activate`
-5. Execute: `pip install -r requirements.txt`
-6. Execute: `pip install -r requirements.dev.txt`
-7. Execute: `pip install -r requirements.test.txt`
-8. Copy the development env template into a real `.env` file (the app will not start without it):
+5. Execute: `pip install -e .[dev,test]`
+6. Copy the development env template into a real `.env` file (the app will not start without it):
    - Windows: `copy .env.example.dev .env`
    - Linux/Mac: `cp .env.example.dev .env`
-9. Use `python app.py` or `python -m src` to execute the program
+7. Use `python app.py` or `python -m src` to execute the program
 
 ### Pre-Commit for Development
 
@@ -103,9 +102,8 @@ With the project installed, you can run the test suite to verify everything work
 2. Execute: `python -m venv venv`
 3. Execute in Windows: `venv\Scripts\activate`
 4. Execute in Linux/Mac: `source venv/bin/activate`
-5. Execute: `pip install -r requirements.txt`
-6. Execute: `pip install -r requirements.test.txt`
-7. Execute: `pytest --log-cli-level=INFO`
+5. Execute: `pip install -e .[test]`
+6. Execute: `pytest --log-cli-level=INFO`
 
 ## Security Audit
 
@@ -113,8 +111,8 @@ Before packaging or distributing the app, scan your dependencies for known vulne
 
 1. Go to the repository folder
 2. Activate your virtual environment
-3. Execute: `pip install -r requirements.dev.txt`
-4. Execute: `pip-audit -r requirements.txt`
+3. Execute: `pip install -e .[dev]`
+4. Execute: `pip-audit`
 
 ## Build
 
@@ -126,7 +124,7 @@ Once tests pass and the audit is clean, you can generate a standalone executable
 
 1. Go to the repository folder
 2. Activate your virtual environment: `venv\Scripts\activate`
-3. Install build dependencies: `pip install -r requirements.build.txt`
+3. Install build dependencies: `pip install -e .[build]`
 4. Create the executable: `pyinstaller app.spec`
 
 Alternatively, you can run the helper script: `build.bat`
@@ -135,7 +133,7 @@ Alternatively, you can run the helper script: `build.bat`
 
 1. Go to the repository folder
 2. Activate your virtual environment: `source venv/bin/activate`
-3. Install build dependencies: `pip install -r requirements.build.txt`
+3. Install build dependencies: `pip install -e .[build]`
 4. Create the executable: `pyinstaller app.spec`
 
 Alternatively, you can run the helper script: `./build.sh`
