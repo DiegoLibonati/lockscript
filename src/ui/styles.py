@@ -1,4 +1,5 @@
 from tkinter import BOTH, BOTTOM, CENTER, END, HORIZONTAL, NONE, RAISED, RIGHT, X, Y
+from typing import Literal
 
 
 class Styles:
@@ -30,4 +31,4 @@ class Styles:
 
     ANCHOR_CENTER = CENTER
 
-    RELIEF_RAISED = RAISED
+    RELIEF_RAISED: Literal["raised"] = RAISED

@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from tkinter import Frame, Label, Misc, StringVar
 
 from src.ui.components.action_buttons import ActionButtons
@@ -10,9 +11,9 @@ class MainView(Frame):
         self,
         root: Misc,
         styles: Styles,
-        on_import: callable,
-        on_encrypt: callable,
-        on_decrypt: callable,
+        on_import: Callable[[], None],
+        on_encrypt: Callable[[], None],
+        on_decrypt: Callable[[], None],
     ) -> None:
         super().__init__(root, bg=styles.WHITE_COLOR)
         self._styles = styles

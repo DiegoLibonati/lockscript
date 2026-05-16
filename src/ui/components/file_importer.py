@@ -1,10 +1,11 @@
+from collections.abc import Callable
 from tkinter import Button, Frame, Label, Misc, StringVar
 
 from src.ui.styles import Styles
 
 
 class FileImporter(Frame):
-    def __init__(self, parent: Misc, styles: Styles, on_import: callable) -> None:
+    def __init__(self, parent: Misc, styles: Styles, on_import: Callable[[], None]) -> None:
         super().__init__(parent, bg=styles.WHITE_COLOR)
         self._styles = styles
         self._on_import = on_import
